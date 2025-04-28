@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMS - Home</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #222;
+            color: #fff;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #333;
+            padding: 15px;
+            border-bottom: 2px solid #444;
+            z-index: 900;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            padding-left: 15px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        .navbar button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .navbar button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            height: 100vh;
+            background: #111;
+            position: fixed;
+            top: 0;
+            left: -220px;
+            padding: 15px;
+            transition: 0.3s ease-in-out;
+            z-index: 1000;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            padding: 10px;
+            margin: 5px 0;
+            background: #333;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .sidebar ul li:hover {
+            background: #444;
+        }
+
+        /* Sidebar Toggle Button */
+        .slide-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            z-index: 1100;
+        }
+
+        .slide-btn:hover {
+            background: #0056b3;
+        }
+
+        /* Adjust Heading When Sidebar Opens */
+        .shift-right {
+            margin-left: 220px;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 20px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 15px;
+            margin: 10px 5px;
+            border: none;
+            cursor: pointer;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .btn-success { background-color: #28A745; }
+        .btn-danger { background-color: #DC3545; }
+        .btn-success:hover { background-color: #218838; }
+        .btn-danger:hover { background-color: #C82333; }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #333;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #555;
+            text-align: left;
+        }
+
+        th {
+            background: #444;
+        }
+
+        tr:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Toggle Button -->
+    <button class="slide-btn" onclick="toggleSidebar()">☰ Menu</button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <h2>Menu</h2>
+        <ul>
+            <li onclick="alert('Dashboard')">Dashboard</li>
+            <li onclick="alert('Inventory')">Inventory</li>
+            <li onclick="alert('Orders')">Orders</li>
+            <li onclick="alert('Sales Report')">Sales Report</li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        
+        <!-- Navigation Bar -->
+        <div class="navbar" id="navbar">
+            <h1 id="title">Inventory Management System</h1>
+            <button onclick="location.href='barcode_scanner.html'">Scan Barcode</button>
+        </div>
+
+        <!-- Manage Products Section -->
+        <h2>Manage Products</h2>
+        <button class="btn btn-success" onclick="addProduct()">Add Product</button>
+        <button class="btn btn-danger" onclick="clearProducts()">Clear Products</button>
+
+        <!-- Product List -->
+        <h2>Product List</h2>
+        <table id="productTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Products will be added here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let sidebarOpen = false;
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const navbar = document.getElementById('navbar');
+            const title = document.getElementById('title');
+
+            if (sidebarOpen) {
+                sidebar.style.left = "-220px";
+                navbar.classList.remove("shift-right");
+                title.classList.remove("shift-right");
+            } else {
+                sidebar.style.left = "0";
+                navbar.classList.add("shift-right");
+                title.classList.add("shift-right");
+            }
+
+            sidebarOpen = !sidebarOpen;
+        }
+
+        let products = [];
+
+        function addProduct() {
+            const newProduct = { id: products.length + 1, name: "New Product", price: 100, stock: 10 };
+            products.push(newProduct);
+            loadProducts();
+        }
+
+        function clearProducts() {
+            products = [];
+            loadProducts();
+        }
+
+        function loadProducts() {
+            const tableBody = document.getElementById('productTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+            products.forEach(product => {
+                let row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${product.id}</td>
+                    <td>${product.name}</td>
+                    <td>${product.price}</td>
+                    <td>${product.stock}</td>
+                    <td><button class="btn btn-danger" onclick="deleteProduct(${product.id})">Delete</button></td>
+                `;
+            });
+        }
+
+        function deleteProduct(id) {
+            products = products.filter(product => product.id !== id);
+            loadProducts();
+        }
+    </script>
+
+</body>
+</html>

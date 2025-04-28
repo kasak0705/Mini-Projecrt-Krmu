@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Dashboard | Inventory Management</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- Menu Button -->
+    <div class="menu-container">
+        <button class="menu-btn">☰ Menu</button>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <span class="close-sidebar-btn">&times;</span>
+        <ul>
+            <li><a href="index.html">🏠 Home</a></li>
+            <li><a href="dashboard.html">📊 Dashboard</a></li>
+            <li><a href="/inventory/inventory.html">📦 Inventory</a></li>
+            <li><a href="#">⚙️ Settings</a></li>
+        </ul>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div class="content-container">
+        <div class="dashboard-wrapper">
+            <h1 class="heading">Dashboard</h1>
+
+            <!-- Chart -->
+            <div class="chart-box">
+                <canvas id="inventoryChart" width="400" height="200"></canvas>
+            </div>
+
+            <!-- Low Stock and Out of Stock Section -->
+            <div class="stock-alerts">
+                <div class="alert-box">
+                    <h3>⚠️ Low Stock Items (≤ 5 units)</h3>
+                    <ul id="lowStockList"></ul>
+                </div>
+                <div class="alert-box">
+                    <h3>❌ Out of Stock Items</h3>
+                    <ul id="outOfStockList"></ul>
+                </div>
+            </div>
+            <!-- Invoice Section -->
+<div class="invoice-section">
+    <h2>🧾 Generate Invoice</h2>
+    <div class="invoice-form">
+        <select id="productSelect">
+            <option value="" disabled selected>Select a product</option>
+        </select>
+        <input type="number" id="invoiceQty" placeholder="Quantity" min="1" />
+        <button onclick="addToInvoice()">Add to Invoice</button>
+    </div>
+    <ul id="invoiceList"></ul>
+    <button onclick="generateInvoicePDF()" class="btn">Generate PDF</button>
+</div>
+
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script>
+        
+        const ctx = document.getElementById('inventoryChart').getContext('2d');
+        const inventoryData = JSON.parse(localStorage.getItem("inventory")) || [];
+
+        const labels = inventoryData.map(item => item.productName);
+        const quantities = inventoryData.map(item => item.quantity);
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Product Quantities',
+                    data: quantities,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // 🔔 Stock Alerts
+        const lowStockList = document.getElementById('lowStockList');
+        const outOfStockList = document.getElementById('outOfStockList');
+
+        inventoryData.forEach(product => {
+            const li = document.createElement("li");
+            li.textContent = `${product.productName} (Stock: ${product.quantity})`;
+
+            if (product.quantity === 0) {
+                outOfStockList.appendChild(li);
+            } else if (product.quantity <= 5) {
+                lowStockList.appendChild(li);
+            }
+        });
+        
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        const invoiceData = [];
+        const productSelect = document.getElementById('productSelect');
+        const invoiceList = document.getElementById('invoiceList');
+    
+        // Populate dropdown
+        inventoryData.forEach(product => {
+            const option = document.createElement("option");
+            option.value = product.productName;
+            option.textContent = product.productName;
+            productSelect.appendChild(option);
+        });
+    
+        // Add item to invoice
+        function addToInvoice() {
+            const name = productSelect.value;
+            const qty = parseInt(document.getElementById('invoiceQty').value, 10);
+            const product = inventoryData.find(p => p.productName === name);
+    
+            if (!name || !qty || isNaN(qty)) {
+                alert("Please select a product and enter quantity.");
+                return;
+            }
+    
+            invoiceData.push({
+                name,
+                quantity: qty,
+                price: product.price,
+                total: qty * product.price
+            });
+    
+            const li = document.createElement("li");
+            li.textContent = `${name} - Qty: ${qty} - ₹${product.price} each - Total: ₹${qty * product.price}`;
+            invoiceList.appendChild(li);
+        }
+    
+        // Generate PDF Invoice
+        async function generateInvoicePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+    
+            doc.setFontSize(18);
+            doc.text("INVOICE", 90, 20);
+    
+            doc.setFontSize(12);
+            let y = 40;
+            let grandTotal = 0;
+    
+            invoiceData.forEach((item, index) => {
+                doc.text(`${index + 1}. ${item.name} - Qty: ${item.quantity} - ₹${item.price}/unit - Total: ₹${item.total}`, 20, y);
+                y += 10;
+                grandTotal += item.total;
+            });
+    
+            doc.setFontSize(14);
+            doc.text(`Grand Total: ₹${grandTotal}`, 20, y + 10);
+    
+            doc.save("invoice.pdf");
+        }
+    </script>
+    
+
+</body>
+</html>
